@@ -16,6 +16,7 @@ public class AppUserController {
         this.appUserService = appUserService;
     }
 
+    // Endpoint to create user
     @PostMapping(path = "/register")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> registerAppUser(@RequestBody AppUser appUser) {
@@ -27,6 +28,7 @@ public class AppUserController {
         }
     }
 
+    // Endpoint to connect
     @PostMapping(path = "/login")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> loginAppUser(@RequestBody AppUser appUser){
