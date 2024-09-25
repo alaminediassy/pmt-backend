@@ -26,4 +26,15 @@ public class AppUserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @PostMapping(path = "/login")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> loginAppUser(@RequestBody AppUser appUser){
+        try {
+            AppUser loggedInUser = appUserService.loginAppUser(appUser.getEmail(), appUser.getPassword());
+            return ResponseEntity.ok("User logged in successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 }
