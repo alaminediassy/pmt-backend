@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "projects")
@@ -25,7 +27,17 @@ public class Project {
     private String description;
     private LocalDate startDate;
 
+    // Project owner
     @ManyToOne
     @JoinColumn(name = "user_id")
     private AppUser owner;
+
+    // Member of project
+    @ManyToMany
+    @JoinTable(
+            name = "project_members",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<AppUser> members = new HashSet<>();
 }
