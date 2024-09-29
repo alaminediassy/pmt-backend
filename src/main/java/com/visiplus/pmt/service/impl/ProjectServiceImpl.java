@@ -2,9 +2,13 @@ package com.visiplus.pmt.service.impl;
 
 import com.visiplus.pmt.entity.AppUser;
 import com.visiplus.pmt.entity.Project;
+import com.visiplus.pmt.entity.ProjectMemberRole;
+import com.visiplus.pmt.enums.Role;
 import com.visiplus.pmt.repository.AppUserRepository;
+import com.visiplus.pmt.repository.ProjectMemberRoleRepository;
 import com.visiplus.pmt.repository.ProjectRepository;
 import com.visiplus.pmt.service.ProjectService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -14,35 +18,61 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final AppUserRepository appUserRepository;
+    private final ProjectMemberRoleRepository projectMemberRoleRepository;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository, AppUserRepository appUserRepository) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, AppUserRepository appUserRepository, ProjectMemberRoleRepository projectMemberRoleRepository) {
         this.projectRepository = projectRepository;
         this.appUserRepository = appUserRepository;
+        this.projectMemberRoleRepository = projectMemberRoleRepository;
     }
     @Override
-    public Project createdProject(Project project) {
+    public Project createProject(Project project) {
         return projectRepository.save(project);
     }
 
+
+    @Transactional
     @Override
     public Project addMemberToProject(Long projectId, String email) {
-        // Verify if project exist
-        Optional<Project> projectOpt = projectRepository.findById(projectId);
-        if (projectOpt.isEmpty()) {
-            throw new RuntimeException("Project not found");
-        }
-        Project project = projectOpt.get();
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found with id: " + projectId));
 
-        // Check if the user with this email already exists in pmt
-        Optional<AppUser> userOpt = appUserRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            throw new RuntimeException("User with email " + email + " does not exist in the company.");
-        }
-        AppUser user = userOpt.get();
+        AppUser user = appUserRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
-        // Add the user to the project
-        project.getMembers().add(user);
-        return projectRepository.save(project);
+        Optional<ProjectMemberRole> existingMember = projectMemberRoleRepository
+                .findByProjectIdAndMemberId(projectId, user.getId());
+
+        if (existingMember.isPresent()) {
+            throw new RuntimeException("User with email " + email + " is already a member of this project.");
+        }
+
+        ProjectMemberRole memberRole = new ProjectMemberRole();
+        memberRole.setProject(project);
+        memberRole.setMember(user);
+        memberRole.setRole(Role.MEMBER);
+
+        project.getMembersWithRoles().add(memberRole);
+
+        projectMemberRoleRepository.save(memberRole);
+
+        project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found after saving member"));
+
+        System.out.println("Ajout de l'utilisateur avec l'email " + email + " au projet " + project.getName());
+
+        return project;
+    }
+
+
+    @Override
+    public ProjectMemberRole assignRoleToMember(Long projectId, Long memberId, Role role) {
+        return projectMemberRoleRepository.findByProjectIdAndMemberId(projectId, memberId)
+                .map(memberRole -> {
+                    memberRole.setRole(role);
+                    return projectMemberRoleRepository.save(memberRole);
+                })
+                .orElseThrow(() -> new RuntimeException("Member with ID " + memberId + " not found in project with ID " + projectId));
     }
 
     @Override
