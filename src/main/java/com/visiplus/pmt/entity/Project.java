@@ -1,9 +1,11 @@
 package com.visiplus.pmt.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
@@ -27,17 +29,13 @@ public class Project {
     private String description;
     private LocalDate startDate;
 
-    // Project owner
     @ManyToOne
     @JoinColumn(name = "user_id")
     private AppUser owner;
 
-    // Member of project
-    @ManyToMany
-    @JoinTable(
-            name = "project_members",
-            joinColumns = @JoinColumn(name = "project_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private Set<AppUser> members = new HashSet<>();
+    @OneToMany(mappedBy = "project", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JsonManagedReference
+    @EqualsAndHashCode.Exclude
+    private Set<ProjectMemberRole> membersWithRoles = new HashSet<>();
+
 }

@@ -1,10 +1,12 @@
 package com.visiplus.pmt.service;
 
 import com.visiplus.pmt.entity.Project;
+import com.visiplus.pmt.entity.ProjectMemberRole;
+import com.visiplus.pmt.enums.Role;
 
 public interface ProjectService {
-    Project createdProject(Project project);
+    Project createProject(Project project);
     Project addMemberToProject(Long projectId, String email);
-
+    ProjectMemberRole assignRoleToMember(Long projectId, Long memberId, Role role);
     Project getProjectById(Long projectId);
 }

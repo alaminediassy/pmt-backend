@@ -1,8 +1,11 @@
 package com.visiplus.pmt.controller;
 
 import com.visiplus.pmt.dto.InviteRequestDTO;
+import com.visiplus.pmt.dto.RoleAssignmentDTO;
 import com.visiplus.pmt.entity.AppUser;
 import com.visiplus.pmt.entity.Project;
+import com.visiplus.pmt.entity.ProjectMemberRole;
+import com.visiplus.pmt.enums.Role;
 import com.visiplus.pmt.service.AppUserService;
 import com.visiplus.pmt.service.ProjectService;
 import org.springframework.http.HttpStatus;
@@ -32,7 +35,7 @@ public class ProjectController {
             }
             project.setOwner(owner);
 
-            Project createdProject = projectService.createdProject(project);
+            Project createdProject = projectService.createProject(project);
             return ResponseEntity.ok(String.format("Project '%s' created successfully", createdProject.getName()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -41,23 +44,27 @@ public class ProjectController {
 
     // Endpoint to invite a member to the project
     @PostMapping("/{projectId}/invite/{userId}")
-    public ResponseEntity<?> inviteMember(
+    public ResponseEntity<Project> inviteMember(
             @PathVariable Long projectId,
             @PathVariable Long userId,
-            @RequestBody InviteRequestDTO inviteRequest) {
+            @RequestBody InviteRequestDTO inviteRequestDTO) {
         try {
-            Project project = projectService.getProjectById(projectId);
-            AppUser requester = appUserService.findUserById(userId);
+            Project updatedProject = projectService.addMemberToProject(projectId, inviteRequestDTO.getEmail());
+            return ResponseEntity.ok(updatedProject);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
 
-            if (!project.getOwner().getId().equals(requester.getId())){
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not owner of this project");
-            }
-
-            Project updatedProject = projectService.addMemberToProject(projectId, inviteRequest.getEmail());
-            return ResponseEntity.ok(String.format(
-                    "User with email %s added to project '%s'",
-                    inviteRequest.getEmail(),
-                    updatedProject.getName()));
+    // Endpoint to assign role to project member
+    @PutMapping("/{projectId}/assign-role/{memberId}")
+    public ResponseEntity<String> assignRoleToMember(
+            @PathVariable Long projectId,
+            @PathVariable Long memberId,
+            @RequestBody RoleAssignmentDTO roleAssignmentDTO) {
+        try {
+            projectService.assignRoleToMember(projectId, memberId, roleAssignmentDTO.getRole());
+            return ResponseEntity.ok("Role updated successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
