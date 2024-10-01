@@ -4,12 +4,15 @@ import com.visiplus.pmt.entity.AppUser;
 import com.visiplus.pmt.entity.Project;
 import com.visiplus.pmt.entity.ProjectMemberRole;
 import com.visiplus.pmt.enums.Role;
+import com.visiplus.pmt.exception.UserNotFoundException;
 import com.visiplus.pmt.repository.AppUserRepository;
 import com.visiplus.pmt.repository.ProjectMemberRoleRepository;
 import com.visiplus.pmt.repository.ProjectRepository;
 import com.visiplus.pmt.service.ProjectService;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -35,16 +38,16 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public Project addMemberToProject(Long projectId, String email) {
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found with id: " + projectId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found with id: " + projectId));
 
         AppUser user = appUserRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
 
         Optional<ProjectMemberRole> existingMember = projectMemberRoleRepository
                 .findByProjectIdAndMemberId(projectId, user.getId());
 
         if (existingMember.isPresent()) {
-            throw new RuntimeException("User with email " + email + " is already a member of this project.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User with email " + email + " is already a member of this project.");
         }
 
         ProjectMemberRole memberRole = new ProjectMemberRole();
@@ -56,14 +59,8 @@ public class ProjectServiceImpl implements ProjectService {
 
         projectMemberRoleRepository.save(memberRole);
 
-        project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found after saving member"));
-
-        System.out.println("Ajout de l'utilisateur avec l'email " + email + " au projet " + project.getName());
-
         return project;
     }
-
 
     @Override
     public ProjectMemberRole assignRoleToMember(Long projectId, Long memberId, Role role) {
