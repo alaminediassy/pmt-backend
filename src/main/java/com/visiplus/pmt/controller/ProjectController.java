@@ -4,8 +4,7 @@ import com.visiplus.pmt.dto.InviteRequestDTO;
 import com.visiplus.pmt.dto.RoleAssignmentDTO;
 import com.visiplus.pmt.entity.AppUser;
 import com.visiplus.pmt.entity.Project;
-import com.visiplus.pmt.entity.ProjectMemberRole;
-import com.visiplus.pmt.enums.Role;
+import com.visiplus.pmt.exception.UserNotFoundException;
 import com.visiplus.pmt.service.AppUserService;
 import com.visiplus.pmt.service.ProjectService;
 import org.springframework.http.HttpStatus;
@@ -44,15 +43,19 @@ public class ProjectController {
 
     // Endpoint to invite a member to the project
     @PostMapping("/{projectId}/invite/{userId}")
-    public ResponseEntity<Project> inviteMember(
+    public ResponseEntity<String> inviteMember(
             @PathVariable Long projectId,
             @PathVariable Long userId,
             @RequestBody InviteRequestDTO inviteRequestDTO) {
         try {
             Project updatedProject = projectService.addMemberToProject(projectId, inviteRequestDTO.getEmail());
-            return ResponseEntity.ok(updatedProject);
+            return ResponseEntity.ok("Member successfully added to project " + updatedProject.getName());
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("User not found with email: " + inviteRequestDTO.getEmail());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Error processing request: " + e.getMessage());
         }
     }
 
