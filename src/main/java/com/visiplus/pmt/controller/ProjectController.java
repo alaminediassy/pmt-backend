@@ -2,7 +2,6 @@ package com.visiplus.pmt.controller;
 
 import com.visiplus.pmt.dto.InviteRequestDTO;
 import com.visiplus.pmt.dto.RoleAssignmentDTO;
-import com.visiplus.pmt.entity.AppUser;
 import com.visiplus.pmt.entity.Project;
 import com.visiplus.pmt.exception.UserNotFoundException;
 import com.visiplus.pmt.service.AppUserService;
@@ -26,30 +25,26 @@ public class ProjectController {
     // Endpoint to create a project
     @PostMapping("/create/{userId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> createdProject(@RequestBody Project project, @PathVariable Long userId) {
+    public ResponseEntity<?> createProject(@RequestBody Project project, @PathVariable Long userId) {
         try {
-            AppUser owner = appUserService.findUserById(userId);
-            if (owner == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-            }
-            project.setOwner(owner);
+            Project createdProject = projectService.createProject(project, userId);
 
-            Project createdProject = projectService.createProject(project);
-            return ResponseEntity.ok(String.format("Project '%s' created successfully", createdProject.getName()));
+            return ResponseEntity.ok(createdProject);
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    // Endpoint to invite a member to the project
+
     @PostMapping("/{projectId}/invite/{userId}")
-    public ResponseEntity<String> inviteMember(
+    public ResponseEntity<?> inviteMember(
             @PathVariable Long projectId,
             @PathVariable Long userId,
             @RequestBody InviteRequestDTO inviteRequestDTO) {
         try {
             Project updatedProject = projectService.addMemberToProject(projectId, inviteRequestDTO.getEmail());
-            return ResponseEntity.ok("Member successfully added to project " + updatedProject.getName());
+            return ResponseEntity.ok(updatedProject);
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("User not found with email: " + inviteRequestDTO.getEmail());
@@ -58,6 +53,7 @@ public class ProjectController {
                     .body("Error processing request: " + e.getMessage());
         }
     }
+
 
     // Endpoint to assign role to project member
     @PutMapping("/{projectId}/assign-role/{memberId}")

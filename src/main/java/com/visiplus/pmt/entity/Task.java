@@ -1,6 +1,7 @@
 package com.visiplus.pmt.entity;
 
 import com.visiplus.pmt.enums.Priority;
+import com.visiplus.pmt.enums.TaskStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,9 +37,12 @@ public class Task {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    // Nouveau champ pour l'utilisateur assigné
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignee_id", nullable = true)  // facultatif si pas encore assigné
+    @JoinColumn(name = "assignee_id", nullable = true)
     private AppUser assignee;
 
+    private LocalDate completionDate;
+
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;
 }
