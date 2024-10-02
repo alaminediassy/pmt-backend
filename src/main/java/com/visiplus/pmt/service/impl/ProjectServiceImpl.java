@@ -28,9 +28,24 @@ public class ProjectServiceImpl implements ProjectService {
         this.appUserRepository = appUserRepository;
         this.projectMemberRoleRepository = projectMemberRoleRepository;
     }
-    @Override
-    public Project createProject(Project project) {
-        return projectRepository.save(project);
+
+    @Transactional
+    public Project createProject(Project project, Long userId) {
+        AppUser appUser = appUserRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("AppUser not found with id: " + userId));
+
+        project.setOwner(appUser);
+
+        Project savedProject = projectRepository.save(project);
+
+        ProjectMemberRole memberRole = new ProjectMemberRole();
+        memberRole.setProject(savedProject);
+        memberRole.setMember(appUser);
+        memberRole.setRole(Role.ADMIN);
+
+        projectMemberRoleRepository.save(memberRole);
+
+        return savedProject;
     }
 
 
