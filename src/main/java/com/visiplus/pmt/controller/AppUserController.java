@@ -6,6 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/users")
 public class AppUserController {
@@ -31,12 +34,13 @@ public class AppUserController {
     // Endpoint to connect
     @PostMapping(path = "/login")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> loginAppUser(@RequestBody AppUser appUser){
+    public ResponseEntity<?> loginAppUser(@RequestBody AppUser appUser) {
         try {
             AppUser loggedInUser = appUserService.loginAppUser(appUser.getEmail(), appUser.getPassword());
-            return ResponseEntity.ok("User logged in successfully");
+            return ResponseEntity.ok(Collections.singletonMap("message", "User logged in successfully"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", e.getMessage()));
         }
     }
+
 }

@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class TaskServiceImpl implements TaskService {
 
+    // Dependencies injected for task, project, user, and email repositories
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMemberRoleRepository projectMemberRoleRepository;
@@ -30,6 +31,7 @@ public class TaskServiceImpl implements TaskService {
     private final EmailService emailService;
     private final TaskHistoryRepository taskHistoryRepository;
 
+    // Constructor-based dependency injection
     public TaskServiceImpl(TaskRepository taskRepository,
                            ProjectRepository projectRepository,
                            ProjectMemberRoleRepository projectMemberRoleRepository, AppUserRepository appUserRepository, EmailService emailService, TaskHistoryRepository taskHistoryRepository) {
@@ -41,6 +43,15 @@ public class TaskServiceImpl implements TaskService {
         this.taskHistoryRepository = taskHistoryRepository;
     }
 
+    /**
+     * Creates a new task for a project and associates it with a user.
+     *
+     * @param task the task to be created
+     * @param projectId the ID of the project
+     * @param userId the ID of the user creating the task
+     * @return TaskResponseDTO containing the task and project details
+     * @throws RuntimeException if the project or user is not valid
+     */
     @Override
     @Transactional
     public TaskResponseDTO createTask(Task task, Long projectId, Long userId) {
@@ -54,14 +65,19 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException("You do not have permission to create tasks in this project");
         }
 
+        // Set task status to TODO and associate with the project
         task.setStatus(TaskStatus.TODO);
         task.setProject(project);
 
+        // Save the task to the repository
         Task savedTask = taskRepository.save(task);
 
         return getTaskResponseDTO(savedTask, project);
     }
 
+    /**
+     * Helper method to convert Task and Project entities to a TaskResponseDTO.
+     */
     private static TaskResponseDTO getTaskResponseDTO(Task savedTask, Project project) {
         TaskResponseDTO taskResponseDTO = new TaskResponseDTO();
         taskResponseDTO.setId(savedTask.getId());
@@ -86,7 +102,16 @@ public class TaskServiceImpl implements TaskService {
         return taskResponseDTO;
     }
 
-
+    /**
+     * Assigns a task to a project member.
+     *
+     * @param taskId the ID of the task
+     * @param projectId the ID of the project
+     * @param assigneeId the ID of the assignee
+     * @param userId the ID of the user assigning the task
+     * @return TaskResponseDTO with updated task details
+     * @throws RuntimeException if the task, project, or user is invalid
+     */
     @Override
     @Transactional
     public TaskResponseDTO assignTaskToMember(Long taskId, Long projectId, Long assigneeId, Long userId) {
@@ -109,15 +134,21 @@ public class TaskServiceImpl implements TaskService {
 
         task.setAssignee(assignee);
 
+        // Save the updated task
         Task updatedTask = taskRepository.save(task);
 
-        // Call Method to send email
+        // Send email notification to assignee
         sendTaskAssignmentEmail(task, assignee);
 
         return getTaskResponseDTO(updatedTask, task.getProject());
     }
 
-    // Méthod to send email
+    /**
+     * Method to send an email notification for task assignment.
+     *
+     * @param task the task assigned
+     * @param assignee the user assigned to the task
+     */
     private void sendTaskAssignmentEmail(Task task, AppUser assignee) {
         String subject = "New Task Assigned: " + task.getName();
         String body = String.format(
@@ -135,44 +166,56 @@ public class TaskServiceImpl implements TaskService {
         emailService.sendTaskAssignmentEmail(assignee.getEmail(), subject, body);
     }
 
+    /**
+     * Updates task details and logs changes in task history.
+     *
+     * @param taskId the ID of the task
+     * @param projectId the ID of the project
+     * @param userId the ID of the user updating the task
+     * @param updatedTaskInfo the updated task details
+     * @return TaskResponseDTO with updated task information
+     * @throws RuntimeException if task, project, or user is invalid
+     */
     @Override
     @Transactional
     public TaskResponseDTO updateTask(Long taskId, Long projectId, Long userId, Task updatedTaskInfo) {
-        // Vérifier les permissions de l'utilisateur
         ProjectMemberRole memberRole = projectMemberRoleRepository.findByProjectIdAndMemberId(projectId, userId)
                 .orElseThrow(() -> new RuntimeException("User is not a member of this project"));
         if (memberRole.getRole() != Role.ADMIN && memberRole.getRole() != Role.MEMBER) {
             throw new RuntimeException("You do not have permission to update tasks in this project");
         }
 
-        // Récupérer la tâche
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
 
-        // Vérifier que la tâche appartient au bon projet
         if (!task.getProject().getId().equals(projectId)) {
             throw new RuntimeException("Task does not belong to this project");
         }
 
-        // Mise à jour des informations de la tâche
         if (!task.getName().equals(updatedTaskInfo.getName())) {
             saveTaskHistory(taskId, userId, "name", task.getName(), updatedTaskInfo.getName());
             task.setName(updatedTaskInfo.getName());
         }
-        // Ajouter d'autres champs comme pour la description, dueDate, etc.
 
-        // Mise à jour du statut
+        // Update task fields and save task history for changes
         if (task.getStatus() != updatedTaskInfo.getStatus()) {
             saveTaskHistory(taskId, userId, "status", task.getStatus().name(), updatedTaskInfo.getStatus().name());
             task.setStatus(updatedTaskInfo.getStatus());
         }
 
-        // Sauvegarder les modifications
         Task updatedTask = taskRepository.save(task);
         return getTaskResponseDTO(updatedTask, task.getProject());
     }
 
-    // Méthode pour enregistrer l'historique des changements
+    /**
+     * Logs changes made to a task's field in the task history.
+     *
+     * @param taskId the ID of the task
+     * @param userId the ID of the user making changes
+     * @param fieldName the field that was changed
+     * @param oldValue the old value of the field
+     * @param newValue the new value of the field
+     */
     private void saveTaskHistory(Long taskId, Long userId, String fieldName, String oldValue, String newValue) {
         TaskHistory taskHistory = new TaskHistory();
         taskHistory.setTaskId(taskId);
@@ -185,23 +228,36 @@ public class TaskServiceImpl implements TaskService {
     }
 
 
-
+    /**
+     * Retrieves a task by its ID.
+     *
+     * @param taskId the task ID
+     * @param projectId the project ID
+     * @param userId the user ID
+     * @return TaskResponseDTO with task details
+     * @throws RuntimeException if the task or project is invalid
+     */
     @Override
     public TaskResponseDTO getTaskById(Long taskId, Long projectId, Long userId) {
         ProjectMemberRole memberRole = projectMemberRoleRepository.findByProjectIdAndMemberId(projectId, userId)
                 .orElseThrow(() -> new RuntimeException("User is not a member of this project"));
 
-        // Retrieve task
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
 
-        // Verify that the task belongs to the project
         if (!task.getProject().getId().equals(projectId)) {
             throw new RuntimeException("Task does not belong to this project");
         }
         return getTaskResponseDTO(task, task.getProject());
     }
 
+    /**
+     * Retrieves all tasks in a project by status.
+     *
+     * @param status the status of the tasks
+     * @param projectId the project ID
+     * @return List of TaskResponseDTO containing the task details
+     */
     @Override
     public List<TaskResponseDTO> getTasksByStatus(TaskStatus status, Long projectId) {
         List<Task> tasks = taskRepository.findByProjectIdAndStatus(projectId, status);
@@ -210,6 +266,15 @@ public class TaskServiceImpl implements TaskService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Updates the status of a task.
+     *
+     * @param taskId the task ID
+     * @param projectId the project ID
+     * @param userId the user ID
+     * @param status the new task status
+     * @return TaskResponseDTO with updated task details
+     */
     @Override
     public TaskResponseDTO updateTaskStatus(Long taskId, Long projectId, Long userId, String status) {
         // Check if the user has the permissions
@@ -239,7 +304,13 @@ public class TaskServiceImpl implements TaskService {
         return getTaskResponseDTO(updatedTask, task.getProject());
     }
 
-
+    /**
+     * Retrieves task history for a given project and task.
+     *
+     * @param projectId the project ID
+     * @param taskId the task ID
+     * @return ResponseEntity with the task history or error message
+     */
     @GetMapping("/{projectId}/tasks/{taskId}/history")
     public ResponseEntity<String> getTaskHistory(@PathVariable Long projectId, @PathVariable Long taskId) {
         List<TaskHistory> historyList = taskHistoryRepository.findByTaskId(taskId);

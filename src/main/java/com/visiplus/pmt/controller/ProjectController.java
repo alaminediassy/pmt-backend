@@ -4,22 +4,20 @@ import com.visiplus.pmt.dto.InviteRequestDTO;
 import com.visiplus.pmt.dto.RoleAssignmentDTO;
 import com.visiplus.pmt.entity.Project;
 import com.visiplus.pmt.exception.UserNotFoundException;
-import com.visiplus.pmt.service.AppUserService;
 import com.visiplus.pmt.service.ProjectService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
-    private final AppUserService appUserService;
 
-    public ProjectController(ProjectService projectService, AppUserService appUserService) {
+    public ProjectController(ProjectService projectService) {
         this.projectService = projectService;
-        this.appUserService = appUserService;
     }
 
     // Endpoint to create a project
@@ -37,6 +35,7 @@ public class ProjectController {
     }
 
 
+    // Endpoint to invite member to project
     @PostMapping("/{projectId}/invite/{userId}")
     public ResponseEntity<?> inviteMember(
             @PathVariable Long projectId,
