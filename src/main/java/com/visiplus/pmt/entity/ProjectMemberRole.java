@@ -1,7 +1,6 @@
 package com.visiplus.pmt.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.visiplus.pmt.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

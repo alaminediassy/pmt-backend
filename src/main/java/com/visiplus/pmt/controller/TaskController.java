@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/projects")
 public class TaskController {
@@ -26,6 +27,7 @@ public class TaskController {
         this.taskHistoryRepository = taskHistoryRepository;
     }
 
+    // Endpoint to create task
     @PostMapping("/{projectId}/tasks/{userId}")
     public ResponseEntity<TaskResponseDTO> createTask(
             @PathVariable Long projectId,
@@ -35,6 +37,7 @@ public class TaskController {
         return new ResponseEntity<>(createdTask, HttpStatus.CREATED);
     }
 
+    // Endpoint to assign task to member
     @PostMapping("/{projectId}/tasks/{taskId}/assign-task/{userId}/{assigneeId}")
     public ResponseEntity<TaskResponseDTO> assignTaskToMember(
             @PathVariable Long projectId,
@@ -45,6 +48,7 @@ public class TaskController {
         return new ResponseEntity<>(updatedTask, HttpStatus.OK);
     }
 
+    // Endpoint to update task
     @PutMapping("/{projectId}/tasks/{taskId}/update/{userId}")
     public ResponseEntity<TaskResponseDTO> updateTask(
             @PathVariable Long projectId,
@@ -55,6 +59,7 @@ public class TaskController {
         return new ResponseEntity<>(updatedTaskDTO, HttpStatus.OK);
     }
 
+    // Get task by id
     @GetMapping("/{projectId}/tasks/{taskId}/view/{userId}")
     public ResponseEntity<TaskResponseDTO> getTaskById(
             @PathVariable Long projectId,
@@ -64,6 +69,7 @@ public class TaskController {
         return new ResponseEntity<>(taskResponse, HttpStatus.OK);
     }
 
+    // get task by status
     @GetMapping("/{projectId}/tasks/status/{status}")
     public ResponseEntity<List<TaskResponseDTO>> getTasksByStatus(
             @PathVariable Long projectId,
@@ -72,6 +78,7 @@ public class TaskController {
         return new ResponseEntity<>(tasks, HttpStatus.OK);
     }
 
+    // Update task status
     @PutMapping("/{projectId}/tasks/{taskId}/update-status/{userId}")
     public ResponseEntity<TaskResponseDTO> updateTaskStatus(
             @PathVariable Long projectId,
@@ -83,6 +90,7 @@ public class TaskController {
         return new ResponseEntity<>(updatedTask, HttpStatus.OK);
     }
 
+    // Get task history
     @GetMapping("/{projectId}/tasks/{taskId}/history")
     public ResponseEntity<List<TaskHistory>> getTaskHistory(@PathVariable Long projectId, @PathVariable Long taskId) {
         List<TaskHistory> historyList = taskHistoryRepository.findByTaskId(taskId);
@@ -90,11 +98,7 @@ public class TaskController {
         if (historyList.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(historyList);
         }
-
         return ResponseEntity.ok(historyList);
     }
-
-
-
 }
 

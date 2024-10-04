@@ -17,15 +17,15 @@ public class TaskHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long taskId; // ID de la tâche
+    private Long taskId;
 
-    private Long changedBy; // ID de l'utilisateur qui a fait le changement
+    private Long changedBy;
 
-    private String fieldName; // Nom du champ modifié
+    private String fieldName;
 
-    private String oldValue; // Ancienne valeur
+    private String oldValue;
 
-    private String newValue; // Nouvelle valeur
+    private String newValue;
 
     private LocalDateTime changedAt;
 }
