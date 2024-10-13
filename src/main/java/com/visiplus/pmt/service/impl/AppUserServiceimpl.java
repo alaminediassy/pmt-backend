@@ -1,20 +1,28 @@
 package com.visiplus.pmt.service.impl;
 
 import com.visiplus.pmt.entity.AppUser;
+import com.visiplus.pmt.enums.Role;
+import com.visiplus.pmt.jwt.JwtBlacklistService;
+import com.visiplus.pmt.jwt.JwtService;
 import com.visiplus.pmt.repository.AppUserRepository;
 import com.visiplus.pmt.service.AppUserService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class AppUserServiceimpl implements AppUserService {
     // Dependency injection for the AppUserRepository
     private final AppUserRepository appUserRepository;
+    private final JwtService jwtService;
+    private final JwtBlacklistService jwtBlacklistService;
 
     // Constructor to inject the AppUserRepository
-    public AppUserServiceimpl(AppUserRepository appUserRepository) {
+    public AppUserServiceimpl(AppUserRepository appUserRepository, JwtService jwtService, JwtBlacklistService jwtBlacklistService) {
         this.appUserRepository = appUserRepository;
+        this.jwtService = jwtService;
+        this.jwtBlacklistService = jwtBlacklistService;
     }
 
     /**
@@ -49,17 +57,27 @@ public class AppUserServiceimpl implements AppUserService {
      * @param password the user's password
      * @return the authenticated user
      * @throws RuntimeException if the email or password is invalid
-     */
+
+    */
     @Override
     public AppUser loginAppUser(String email, String password) {
         Optional<AppUser> appUser = appUserRepository.findByEmail(email);
 
-        // Check if the email exists and the password matches
         if (appUser.isPresent() && appUser.get().getPassword().equals(password)) {
+            List<Role> userRoles = List.of(Role.MEMBER);
+
+            String token = jwtService.generateToken(email, appUser.get().getId(), userRoles);
+
+            appUser.get().setToken(token);
             return appUser.get();
         } else {
             throw new RuntimeException("Invalid email or password");
         }
+    }
+
+
+    public void logoutUser(String token) {
+        jwtBlacklistService.blacklistToken(token);
     }
 
     /**

@@ -21,6 +21,7 @@ public class ProjectController {
     }
 
     // Endpoint to create a project
+    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/create/{userId}")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> createProject(@RequestBody Project project, @PathVariable Long userId) {
@@ -33,6 +34,13 @@ public class ProjectController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @CrossOrigin(origins = "http://localhost:4200")
+    @RequestMapping(method = RequestMethod.OPTIONS, value = "/create/{userId}")
+    public ResponseEntity<?> preflightResponse(@PathVariable String userId) {
+        return ResponseEntity.ok().build();
+    }
+
 
 
     // Endpoint to invite member to project

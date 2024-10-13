@@ -6,4 +6,5 @@ public interface AppUserService {
     AppUser registerAppUser(AppUser appUser);
     AppUser loginAppUser(String email, String password);
     AppUser findUserById(Long userId);
+    void logoutUser(String cleanedToken);
 }
