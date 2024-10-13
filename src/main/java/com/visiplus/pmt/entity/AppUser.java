@@ -28,4 +28,7 @@ public class AppUser {
     @NotBlank(message = "Password is required")
     private String password;
 
+    @Transient
+    private String token;
+
 }

@@ -37,10 +37,23 @@ public class AppUserController {
     public ResponseEntity<?> loginAppUser(@RequestBody AppUser appUser) {
         try {
             AppUser loggedInUser = appUserService.loginAppUser(appUser.getEmail(), appUser.getPassword());
-            return ResponseEntity.ok(Collections.singletonMap("message", "User logged in successfully"));
+
+            // Return JWT token in the response
+            return ResponseEntity.ok(Collections.singletonMap("token", loggedInUser.getToken()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("error", e.getMessage()));
         }
+    }
+
+    // Endpoint to disconnect
+    @PostMapping(path = "/logout")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<?> logoutAppUser(@RequestHeader("Authorization") String token) {
+        String cleanedToken = token.replace("Bearer ", "");
+
+        appUserService.logoutUser(cleanedToken);
+        return ResponseEntity.ok(Collections.singletonMap("message", "User logged out successfully"));
     }
 
 }
