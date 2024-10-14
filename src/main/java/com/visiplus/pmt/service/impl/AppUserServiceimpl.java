@@ -66,7 +66,11 @@ public class AppUserServiceimpl implements AppUserService {
         if (appUser.isPresent() && appUser.get().getPassword().equals(password)) {
             List<Role> userRoles = List.of(Role.MEMBER);
 
-            String token = jwtService.generateToken(email, appUser.get().getId(), userRoles);
+            // Retrieve username
+            String username = appUser.get().getUsername();
+
+            // Génération du token avec username ajouté
+            String token = jwtService.generateToken(email, username, appUser.get().getId(), userRoles);
 
             appUser.get().setToken(token);
             return appUser.get();
@@ -74,6 +78,7 @@ public class AppUserServiceimpl implements AppUserService {
             throw new RuntimeException("Invalid email or password");
         }
     }
+
 
 
     public void logoutUser(String token) {
