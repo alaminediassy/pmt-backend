@@ -1,6 +1,7 @@
 package com.visiplus.pmt.controller;
 
 import com.visiplus.pmt.entity.AppUser;
+import com.visiplus.pmt.jwt.JwtAuthService;
 import com.visiplus.pmt.service.AppUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,11 @@ import java.util.Collections;
 public class AppUserController {
 
     private final AppUserService appUserService;
+    private final JwtAuthService jwtAuthService;
 
-    public AppUserController(AppUserService appUserService) {
+    public AppUserController(AppUserService appUserService, JwtAuthService jwtAuthService) {
         this.appUserService = appUserService;
+        this.jwtAuthService = jwtAuthService;
     }
 
     // Endpoint to create user
@@ -46,14 +49,22 @@ public class AppUserController {
         }
     }
 
-    // Endpoint to disconnect
     @PostMapping(path = "/logout")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> logoutAppUser(@RequestHeader("Authorization") String token) {
         String cleanedToken = token.replace("Bearer ", "");
 
+        // Vérifier que le token est valide avant de le blacklisté
+        ResponseEntity<String> tokenValidation = jwtAuthService.verifyToken(cleanedToken);
+        if (tokenValidation != null) {
+            return tokenValidation;
+        }
+
+        // Ajouter le token à la blacklist
         appUserService.logoutUser(cleanedToken);
+
         return ResponseEntity.ok(Collections.singletonMap("message", "User logged out successfully"));
     }
+
 
 }

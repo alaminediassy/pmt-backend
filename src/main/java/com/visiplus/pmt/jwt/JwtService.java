@@ -23,14 +23,14 @@ public class JwtService {
         this.expiration = expiration;
     }
 
-    // Generate token
     // Generate token with userId
-    public String generateToken(String email, Long userId, List<Role> roles) {
+    public String generateToken(String email, String username, Long userId, List<Role> roles) {
         List<String> roleNames = roles.stream().map(Enum::name).collect(Collectors.toList());
 
         return JWT.create()
                 .withSubject(email)
-                .withClaim("userId", userId)  // Inclure le userId dans le token
+                .withClaim("userId", userId)
+                .withClaim("username", username)
                 .withExpiresAt(new Date(System.currentTimeMillis() + expiration))
                 .withClaim("roles", roleNames)
                 .sign(Algorithm.HMAC256(secret));
