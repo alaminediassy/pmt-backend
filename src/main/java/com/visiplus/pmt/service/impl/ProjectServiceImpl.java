@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -35,7 +36,7 @@ public class ProjectServiceImpl implements ProjectService {
      * Creates a new project and assigns the given user as the project owner.
      *
      * @param project the project to be created
-     * @param userId the ID of the user who owns the project
+     * @param userId  the ID of the user who owns the project
      * @return the saved project with the owner and default role assigned
      * @throws RuntimeException if the user with the given ID is not found
      */
@@ -68,7 +69,7 @@ public class ProjectServiceImpl implements ProjectService {
      * Adds a new member to the project by their email.
      *
      * @param projectId the ID of the project to which the member is being added
-     * @param email the email of the user to be added
+     * @param email     the email of the user to be added
      * @return the project after adding the new member
      * @throws ResponseStatusException if the project or user is not found, or if the user is already a member
      */
@@ -110,8 +111,8 @@ public class ProjectServiceImpl implements ProjectService {
      * Assigns a new role to an existing project member.
      *
      * @param projectId the ID of the project
-     * @param memberId the ID of the member whose role is being updated
-     * @param role the new role to be assigned
+     * @param memberId  the ID of the member whose role is being updated
+     * @param role      the new role to be assigned
      * @return the updated ProjectMemberRole after the role change
      * @throws RuntimeException if the member is not found in the project
      */
@@ -137,5 +138,15 @@ public class ProjectServiceImpl implements ProjectService {
     public Project getProjectById(Long projectId) {
         return projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project doesn't exist"));
+    }
+
+    @Override
+    public List<Project> getAllProjects() {
+        return (List<Project>) projectRepository.findAll();
+    }
+
+    @Override
+    public List<Project> getProjectsByUserId(Long userId) {
+        return projectRepository.findProjectsByUserId(userId);
     }
 }
