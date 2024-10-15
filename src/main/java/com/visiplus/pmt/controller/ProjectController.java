@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/projects")
@@ -73,6 +75,30 @@ public class ProjectController {
             return ResponseEntity.ok("Role updated successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // Endpoint to get all projects
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllProjects() {
+        try {
+            List<Project> projects = projectService.getAllProjects();
+            return ResponseEntity.ok(projects);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error while retrieving projects : " + e.getMessage());
+        }
+    }
+
+    // Endpoint to get project by userId
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getProjectsByUserId(@PathVariable Long userId) {
+        try {
+            List<Project> projects = projectService.getProjectsByUserId(userId);
+            return ResponseEntity.ok(projects);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error when retrieving projects for the user : " + e.getMessage());
         }
     }
 }
