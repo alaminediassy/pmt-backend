@@ -9,7 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -64,19 +67,21 @@ public class ProjectController {
     }
 
 
-    // Endpoint to assign role to project member
     @PutMapping("/{projectId}/assign-role/{memberId}")
-    public ResponseEntity<String> assignRoleToMember(
+    public ResponseEntity<Map<String, String>> assignRoleToMember(
             @PathVariable Long projectId,
             @PathVariable Long memberId,
             @RequestBody RoleAssignmentDTO roleAssignmentDTO) {
         try {
             projectService.assignRoleToMember(projectId, memberId, roleAssignmentDTO.getRole());
-            return ResponseEntity.ok("Role updated successfully");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Role updated successfully");
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Collections.singletonMap("error", e.getMessage()));
         }
     }
+
 
     // Endpoint to get all projects
     @GetMapping("/all")
