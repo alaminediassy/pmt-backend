@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -303,6 +305,28 @@ public class TaskServiceImpl implements TaskService {
         // Return the updated DTO
         return getTaskResponseDTO(updatedTask, task.getProject());
     }
+
+    @Override
+    public List<TaskResponseDTO> getTasksByProjectId(Long projectId) {
+        return List.of();
+    }
+
+
+
+    @Override
+    public List<TaskResponseDTO> getTasksByUserId(Long userId) {
+        List<ProjectMemberRole> memberRoles = projectMemberRoleRepository.findByMemberId(userId);
+
+        List<Task> tasks = memberRoles.stream()
+                .flatMap(role -> {
+                    List<Task> projectTasks = taskRepository.findByProjectId(role.getProject().getId());
+                    return projectTasks.stream();
+                })
+                .toList();
+
+        return tasks.stream().map(task -> getTaskResponseDTO(task, task.getProject())).collect(Collectors.toList());
+    }
+
 
     /**
      * Retrieves task history for a given project and task.

@@ -69,6 +69,26 @@ public class TaskController {
         return new ResponseEntity<>(taskResponse, HttpStatus.OK);
     }
 
+    // Endpoint to get tasks by projectId
+    @GetMapping("/{projectId}/tasks")
+    public ResponseEntity<?> getTasksByProjectId(@PathVariable Long projectId) {
+        try {
+            List<TaskResponseDTO> tasks = taskService.getTasksByProjectId(projectId);
+            return ResponseEntity.ok(tasks);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving tasks for project: " + e.getMessage());
+        }
+    }
+
+
+    // Endpoint to get all tasks by userId
+    @GetMapping("/tasks/user/{userId}")
+    public ResponseEntity<List<TaskResponseDTO>> getTasksByUserId(@PathVariable Long userId) {
+        List<TaskResponseDTO> tasks = taskService.getTasksByUserId(userId);
+        return new ResponseEntity<>(tasks, HttpStatus.OK);
+    }
+
     // get task by status
     @GetMapping("/{projectId}/tasks/status/{status}")
     public ResponseEntity<List<TaskResponseDTO>> getTasksByStatus(

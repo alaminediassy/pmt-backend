@@ -1,5 +1,6 @@
 package com.visiplus.pmt.service;
 
+import com.visiplus.pmt.dto.MemberDTO;
 import com.visiplus.pmt.entity.Project;
 import com.visiplus.pmt.entity.ProjectMemberRole;
 import com.visiplus.pmt.enums.Role;
@@ -13,4 +14,5 @@ public interface ProjectService {
     Project getProjectById(Long projectId);
     List<Project> getAllProjects();
     List<Project> getProjectsByUserId(Long userId);
+    List<MemberDTO> getProjectMembers(Long projectId);
 }
