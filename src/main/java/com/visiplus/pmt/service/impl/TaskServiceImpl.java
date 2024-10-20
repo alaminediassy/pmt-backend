@@ -183,6 +183,7 @@ public class TaskServiceImpl implements TaskService {
     public TaskResponseDTO updateTask(Long taskId, Long projectId, Long userId, Task updatedTaskInfo) {
         ProjectMemberRole memberRole = projectMemberRoleRepository.findByProjectIdAndMemberId(projectId, userId)
                 .orElseThrow(() -> new RuntimeException("User is not a member of this project"));
+
         if (memberRole.getRole() != Role.ADMIN && memberRole.getRole() != Role.MEMBER) {
             throw new RuntimeException("You do not have permission to update tasks in this project");
         }
@@ -194,20 +195,29 @@ public class TaskServiceImpl implements TaskService {
             throw new RuntimeException("Task does not belong to this project");
         }
 
+        if (updatedTaskInfo.getStatus() == TaskStatus.COMPLETED && updatedTaskInfo.getCompletionDate() != null) {
+            task.setCompletionDate(updatedTaskInfo.getCompletionDate());
+        }
+
+        // Handling status update and null check
+        if (updatedTaskInfo.getStatus() != null && !updatedTaskInfo.getStatus().equals(task.getStatus())) {
+            if (task.getStatus() != null) {
+                saveTaskHistory(taskId, userId, "status", task.getStatus().name(), updatedTaskInfo.getStatus().name());
+            } else {
+                saveTaskHistory(taskId, userId, "status", "null", updatedTaskInfo.getStatus().name());
+            }
+            task.setStatus(updatedTaskInfo.getStatus());
+        }
+
         if (!task.getName().equals(updatedTaskInfo.getName())) {
             saveTaskHistory(taskId, userId, "name", task.getName(), updatedTaskInfo.getName());
             task.setName(updatedTaskInfo.getName());
         }
 
-        // Update task fields and save task history for changes
-        if (task.getStatus() != updatedTaskInfo.getStatus()) {
-            saveTaskHistory(taskId, userId, "status", task.getStatus().name(), updatedTaskInfo.getStatus().name());
-            task.setStatus(updatedTaskInfo.getStatus());
-        }
-
         Task updatedTask = taskRepository.save(task);
         return getTaskResponseDTO(updatedTask, task.getProject());
     }
+
 
     /**
      * Logs changes made to a task's field in the task history.
