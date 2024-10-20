@@ -1,6 +1,7 @@
 package com.visiplus.pmt.controller;
 
 import com.visiplus.pmt.dto.InviteRequestDTO;
+import com.visiplus.pmt.dto.MemberDTO;
 import com.visiplus.pmt.dto.RoleAssignmentDTO;
 import com.visiplus.pmt.entity.Project;
 import com.visiplus.pmt.exception.UserNotFoundException;
@@ -104,6 +105,18 @@ public class ProjectController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error when retrieving projects for the user : " + e.getMessage());
+        }
+    }
+
+        // Endpoint to get all members of a project
+    @GetMapping("/{projectId}/members")
+    public ResponseEntity<?> getProjectMembers(@PathVariable Long projectId) {
+        try {
+            List<MemberDTO> members = projectService.getProjectMembers(projectId);
+            return ResponseEntity.ok(members);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error while retrieving project members: " + e.getMessage());
         }
     }
 }

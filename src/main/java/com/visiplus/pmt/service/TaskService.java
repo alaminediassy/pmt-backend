@@ -13,4 +13,6 @@ public interface TaskService {
     TaskResponseDTO getTaskById(Long taskId, Long projectId, Long userId);
     List<TaskResponseDTO> getTasksByStatus(TaskStatus status, Long projectId);
     TaskResponseDTO updateTaskStatus(Long taskId, Long projectId, Long userId, String status);
+    List<TaskResponseDTO> getTasksByProjectId(Long projectId);
+    List<TaskResponseDTO> getTasksByUserId(Long userId);
 }

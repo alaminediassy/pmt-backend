@@ -1,5 +1,6 @@
 package com.visiplus.pmt.service.impl;
 
+import com.visiplus.pmt.dto.MemberDTO;
 import com.visiplus.pmt.entity.AppUser;
 import com.visiplus.pmt.entity.Project;
 import com.visiplus.pmt.entity.ProjectMemberRole;
@@ -16,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
@@ -148,5 +150,13 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<Project> getProjectsByUserId(Long userId) {
         return projectRepository.findProjectsByUserId(userId);
+    }
+
+    @Override
+    public List<MemberDTO> getProjectMembers(Long projectId) {
+        List<ProjectMemberRole> projectMembers = projectMemberRoleRepository.findByProjectId(projectId);
+        return projectMembers.stream()
+                .map(memberRole -> new MemberDTO(memberRole.getMember().getId(), memberRole.getMember().getUsername(), memberRole.getMember().getEmail()))
+                .collect(Collectors.toList());
     }
 }
