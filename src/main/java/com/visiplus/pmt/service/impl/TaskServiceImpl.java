@@ -181,45 +181,36 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public TaskResponseDTO updateTask(Long taskId, Long projectId, Long userId, Task updatedTaskInfo) {
-        // Vérifie que l'utilisateur est membre du projet
         ProjectMemberRole memberRole = projectMemberRoleRepository.findByProjectIdAndMemberId(projectId, userId)
                 .orElseThrow(() -> new RuntimeException("User is not a member of this project"));
 
-        // Vérifie les permissions de l'utilisateur
         if (memberRole.getRole() != Role.ADMIN && memberRole.getRole() != Role.MEMBER) {
             throw new RuntimeException("You do not have permission to update tasks in this project");
         }
 
-        // Trouve la tâche par son id
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
 
-        // Vérifie que la tâche appartient bien au projet
         if (!task.getProject().getId().equals(projectId)) {
             throw new RuntimeException("Task does not belong to this project");
         }
 
-        // Mise à jour du nom de la tâche
         if (!task.getName().equals(updatedTaskInfo.getName())) {
             saveTaskHistory(taskId, userId, "name", task.getName(), updatedTaskInfo.getName());
             task.setName(updatedTaskInfo.getName());
         }
 
-        // Mise à jour de la description
         if (!task.getDescription().equals(updatedTaskInfo.getDescription())) {
             saveTaskHistory(taskId, userId, "description", task.getDescription(), updatedTaskInfo.getDescription());
             task.setDescription(updatedTaskInfo.getDescription());
         }
 
-        // Mise à jour de la date d'échéance (dueDate)
         if (updatedTaskInfo.getDueDate() != null && !task.getDueDate().equals(updatedTaskInfo.getDueDate())) {
             saveTaskHistory(taskId, userId, "dueDate", task.getDueDate().toString(), updatedTaskInfo.getDueDate().toString());
             task.setDueDate(updatedTaskInfo.getDueDate());
         }
 
-        // Mise à jour de la date de complétion (completionDate)
         if (updatedTaskInfo.getCompletionDate() != null) {
-            // Vérifie si completionDate est différente et non nulle avant de la comparer
             if (task.getCompletionDate() == null || !task.getCompletionDate().equals(updatedTaskInfo.getCompletionDate())) {
                 saveTaskHistory(
                         taskId,
@@ -231,33 +222,26 @@ public class TaskServiceImpl implements TaskService {
                 task.setCompletionDate(updatedTaskInfo.getCompletionDate());
             }
         } else {
-            // Si la completionDate dans updatedTaskInfo est null, réinitialise-la
             if (task.getCompletionDate() != null) {
                 saveTaskHistory(taskId, userId, "completionDate", task.getCompletionDate().toString(), "null");
                 task.setCompletionDate(null);
             }
         }
 
-        // Mise à jour de la priorité
         if (!task.getPriority().equals(updatedTaskInfo.getPriority())) {
             saveTaskHistory(taskId, userId, "priority", task.getPriority().name(), updatedTaskInfo.getPriority().name());
             task.setPriority(updatedTaskInfo.getPriority());
         }
 
-        // Mise à jour du statut
         if (task.getStatus() != updatedTaskInfo.getStatus()) {
             saveTaskHistory(taskId, userId, "status", task.getStatus().name(), updatedTaskInfo.getStatus().name());
             task.setStatus(updatedTaskInfo.getStatus());
         }
 
-        // Sauvegarde la tâche mise à jour
         Task updatedTask = taskRepository.save(task);
 
-        // Retourne la réponse DTO mise à jour
         return getTaskResponseDTO(updatedTask, task.getProject());
     }
-
-
 
 
     /**

@@ -67,7 +67,7 @@ public class ProjectController {
         }
     }
 
-
+    // Endpoint to assign role to member
     @PutMapping("/{projectId}/assign-role/{memberId}")
     public ResponseEntity<Map<String, String>> assignRoleToMember(
             @PathVariable Long projectId,

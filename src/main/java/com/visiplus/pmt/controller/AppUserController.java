@@ -4,6 +4,7 @@ import com.visiplus.pmt.entity.AppUser;
 import com.visiplus.pmt.jwt.JwtAuthService;
 import com.visiplus.pmt.service.AppUserService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +31,8 @@ public class AppUserController {
             AppUser createAppUser = appUserService.registerAppUser(appUser);
             return ResponseEntity.ok(createAppUser);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 
@@ -54,17 +56,18 @@ public class AppUserController {
     public ResponseEntity<?> logoutAppUser(@RequestHeader("Authorization") String token) {
         String cleanedToken = token.replace("Bearer ", "");
 
-        // Vérifier que le token est valide avant de le blacklisté
         ResponseEntity<String> tokenValidation = jwtAuthService.verifyToken(cleanedToken);
         if (tokenValidation != null) {
-            return tokenValidation;
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Collections.singletonMap("error", "Invalid token"));
         }
 
-        // Ajouter le token à la blacklist
         appUserService.logoutUser(cleanedToken);
 
         return ResponseEntity.ok(Collections.singletonMap("message", "User logged out successfully"));
     }
+
 
 
 }
