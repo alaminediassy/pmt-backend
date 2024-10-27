@@ -34,4 +34,7 @@ public class ProjectMemberRole {
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
+
+    public ProjectMemberRole(Project project, AppUser appUser, Role role) {
+    }
 }

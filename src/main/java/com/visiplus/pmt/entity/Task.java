@@ -45,4 +45,7 @@ public class Task {
 
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
+
+    public Task(Object o, String updatedTaskName, String updatedDescription, LocalDate localDate, Priority priority, Object o1, Object o2, TaskStatus taskStatus) {
+    }
 }
