@@ -13,7 +13,8 @@
 8. [Dockerisation](#dockerisation)
 9. [Contributeurs](#contributeurs)
 
----
+
+![Gestion des Tâches](assets/pmt_dashboard.png)
 
 ### 1. Introduction
 L'application **PMT** est un outil de gestion de projets conçu pour faciliter la création, la gestion et la supervision de projets avec divers rôles (administrateur, membre, observateur) et différentes entités (projets, tâches, utilisateurs, etc.). Elle inclut des fonctionnalités avancées pour l’attribution de rôles, la gestion des tâches et le suivi des mouvements.
