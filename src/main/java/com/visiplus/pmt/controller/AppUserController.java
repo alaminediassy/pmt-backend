@@ -67,7 +67,4 @@ public class AppUserController {
 
         return ResponseEntity.ok(Collections.singletonMap("message", "User logged out successfully"));
     }
-
-
-
 }

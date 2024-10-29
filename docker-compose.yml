@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pmt-backend
+    container_name: pmt-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://database:3306/pmt?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: mamadou
+    ports:
+      - "8093:8091"
+    depends_on:
+      - database
+
+  database:
+    image: mariadb:latest
+    container_name: pmt-database
+    environment:
+      MYSQL_ROOT_PASSWORD: mamadou
+      MYSQL_DATABASE: pmt
+    ports:
+      - "8092:8091"
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
