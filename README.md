@@ -28,7 +28,7 @@ L'application **PMT** est un outil de gestion de projets conçu pour faciliter l
 #### Étapes d'Installation
 1. Cloner le dépôt :
    ```bash
-   git clone <URL_du_dépôt>
+   git clone https://github.com/alaminediassy/pmt-backend.git
    cd pmt-backend
    ```
 
@@ -40,15 +40,33 @@ L'application **PMT** est un outil de gestion de projets conçu pour faciliter l
    ```
 
 ### 3. Architecture du Projet
-Le backend est structuré en plusieurs couches :
-- **Controller** : Gestion des requêtes API.
-- **Service** : Logique métier.
-- **Repository** : Accès aux données.
-- **Entities** : Représentation des tables de la base de données.
-- **Tests** : Tests unitaires des fonctionnalités clés.
+
+Le backend est structuré selon une architecture en couches, facilitant la séparation des préoccupations et la maintenabilité :
+
+- **config** : Contient les classes de configuration de l'application, y compris la configuration de la sécurité, JWT, et autres paramètres.
+- **controller** : Gère les requêtes HTTP entrantes et les réponses associées. Chaque contrôleur est dédié à une ressource principale (utilisateurs, projets, tâches, etc.).
+- **dto** : Définit les classes Data Transfer Objects (DTO) pour structurer et transporter les données entre les couches de l'application, sans exposer directement les entités.
+- **entity** : Représente les modèles d'entités persistés dans la base de données. Chaque entité correspond à une table de la base de données (ex. `AppUser`, `Project`, `Task`).
+- **enums** : Contient les énumérations utilisées dans le projet pour des valeurs de type fixe, comme les rôles d'utilisateur ou les statuts de tâche.
+- **exception** : Gère les exceptions personnalisées pour traiter les erreurs spécifiques de l'application.
+- **jwt** : Contient les classes liées à la gestion des tokens JWT, y compris la génération, validation et vérification des tokens.
+- **repository** : Contient les interfaces pour l'accès aux données, en utilisant Spring Data JPA pour communiquer avec la base de données.
+- **service** : Contient la logique métier principale de l'application. Les services orchestrent les opérations sur les entités en combinant la logique des `repository` et les règles métiers.
+
+Dans **src/main/resources**, on trouve :
+- `application.properties` : Fichier de configuration principal pour les propriétés de l’application, comme les paramètres de base de données et de sécurité.
+- `application.properties.example` : Exemple du fichier de configuration sans les informations sensibles, pour faciliter la configuration par d'autres développeurs.
+
+La racine du projet contient également des fichiers clés pour la gestion des dépendances et le déploiement :
+- **Dockerfile** : Définit l’image de l’application pour la containerisation.
+- **docker-compose.yml** : Automatisation de l'orchestration des conteneurs pour l'application et la base de données.
+- **pom.xml** : Fichier de gestion des dépendances Maven.
+- **README.md** : Documentation du projet, incluant les instructions d’installation, d’utilisation et d'architecture.
+
 
 ### 4. Fonctionnalités Principales
 
+- **Gestion des Utilisateurs** : Création de compte utilisateur, connexion, déconnexion 
 - **Gestion des Projets** : Création, édition, suppression et consultation des projets.
 - **Gestion des Tâches** : Ajout, suppression et modification de tâches pour un projet donné.
 - **Authentification et Autorisation** : Accès sécurisé avec JWT, gestion des rôles.
