@@ -186,4 +186,53 @@ Pour lancer l'application avec Docker :
 docker-compose up --build -d
 ```
 
-Merci
+---
+
+### 10. Procédure de Déploiement
+
+Le backend de cette application est configuré pour un déploiement continu (CI/CD) via GitHub Actions et Docker Hub. Voici les étapes pour déployer l'application.
+
+#### Prérequis pour le Déploiement
+
+1. **Docker Hub** : Assurez-vous d'avoir un compte Docker Hub et d'avoir configuré un dépôt pour héberger votre image Docker.
+2. **Secrets GitHub** : Les secrets suivants doivent être ajoutés dans les **Settings > Secrets and variables > Actions** de votre dépôt GitHub :
+   - **DOCKER_USERNAME** : Nom d'utilisateur Docker Hub.
+   - **DOCKER_PASSWORD** : Mot de passe de votre compte Docker Hub.
+
+#### Étapes de Déploiement
+
+Une fois les secrets configurés, le déploiement se fera automatiquement lors des actions suivantes :
+
+- **Push vers la branche `main`** : Chaque fois qu'un commit est poussé vers la branche `main`, le pipeline CI/CD est déclenché.
+- **Pull Request vers `main`** : Le pipeline est également déclenché lors d'une Pull Request vers la branche `main`.
+
+#### Contenu du Pipeline CI/CD
+
+Le fichier de workflow GitHub Actions se trouve dans `.github/workflows/ci-cd.yml` et réalise les actions suivantes :
+
+1. **Installation et Configuration** :
+   - Télécharge le code du dépôt.
+   - Configure Java 17 et Maven.
+   - Cache les dépendances Maven pour accélérer les builds futurs.
+
+2. **Build et Tests** :
+   - Compile le code et exécute les tests avec Maven pour s'assurer que le code est stable.
+
+3. **Build de l'Image Docker** :
+   - Construit une image Docker de l'application avec les dernières modifications.
+
+4. **Push de l'Image vers Docker Hub** :
+   - Pousse l'image construite vers le dépôt Docker Hub configuré, accessible par `$DOCKER_USERNAME/pmt-backend:latest`.
+
+#### Commande Docker pour Exécuter l'Image en Local
+
+Pour exécuter l'image Docker en local après qu'elle a été poussée sur Docker Hub, utilisez la commande suivante :
+
+```bash
+docker run -p 8091:8091 $DOCKER_USERNAME/pmt-backend:latest
+```
+
+Cette commande lance le conteneur Docker, expose le service sur le port `8091` et vous permet d'accéder à l'API du backend.
+
+
+## Merci 👋
