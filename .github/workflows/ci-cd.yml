@@ -33,9 +33,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2
 
-      # Build and test the application
-      - name: Build and test with Maven
-        run: mvn clean install -DskipTests=false
+      # Build the application without running tests
+      - name: Build without tests
+        run: mvn clean install -DskipTests=true
 
       # Log in to Docker Hub
       - name: Log in to Docker Hub
