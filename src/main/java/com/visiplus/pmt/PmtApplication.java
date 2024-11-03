@@ -14,6 +14,7 @@ public class PmtApplication {
 	}
 
 
+	// provide this as a bean and use the default implementation
 	@Bean
 	public JavaMailSender javaMailSender() {
 		return new JavaMailSenderImpl();
