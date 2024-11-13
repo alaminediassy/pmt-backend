@@ -30,5 +30,4 @@ public class AppUser {
 
     @Transient
     private String token;
-
 }
